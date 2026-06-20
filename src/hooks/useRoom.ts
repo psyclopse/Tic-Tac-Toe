@@ -6,7 +6,7 @@ import {
   getRoomById,
   subscribeToRoom,
   updatePlayerPresence,
-} from "@/lib/supabase";
+} from "@/lib/api";
 import type { Player, Room } from "@/lib/types";
 
 interface UseRoomOptions {

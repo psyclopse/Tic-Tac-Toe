@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { createRoom, getRoomByCode, joinRoom } from "@/lib/supabase";
+import { createRoom, getRoomByCode, joinRoom } from "@/lib/api";
 import {
   generateRoomCode,
   getOrCreateSessionId,

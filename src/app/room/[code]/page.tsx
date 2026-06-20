@@ -10,7 +10,7 @@ import { RematchPanel } from "@/components/RematchPanel";
 import { ScoreBoard } from "@/components/ScoreBoard";
 import { Button } from "@/components/ui/Button";
 import { useRoom } from "@/hooks/useRoom";
-import { getRoomByCode, getPlayersInRoom, joinRoom, makeMove, requestRematch, resetScores } from "@/lib/supabase";
+import { getRoomByCode, getPlayersInRoom, joinRoom, makeMove, requestRematch, resetScores } from "@/lib/api";
 import { getOrCreateSessionId, loadSession, saveSession } from "@/lib/utils";
 
 export default function RoomPage() {
