@@ -1,6 +1,6 @@
 # Tic Tac Toe — Online Multiplayer
 
-A production-ready, real-time multiplayer Tic-Tac-Toe web application built with **Next.js 15**, **TypeScript**, **Tailwind CSS**, and **Express.js**. Separate frontend and backend for deployment on **Vercel** and **Render**.
+A production-ready, real-time multiplayer Tic-Tac-Toe web application built with **Next.js 15**, **TypeScript**, **Tailwind CSS**, and **Supabase** (PostgreSQL + Realtime). Separate frontend and backend for deployment on **Vercel** and **Render**.
 
 ## Features
 
@@ -11,7 +11,7 @@ A production-ready, real-time multiplayer Tic-Tac-Toe web application built with
 - **Game logic** — turn-based play, win/draw detection, winning line highlight
 - **Score tracking** — persistent session scores with reset
 - **Rematch** — both players must accept before a new round starts
-- **Server-validated moves** — prevent cheating with backend validation
+- **Race-condition safe** — atomic moves via PostgreSQL functions + optimistic locking
 
 ## Tech Stack
 
@@ -21,117 +21,97 @@ A production-ready, real-time multiplayer Tic-Tac-Toe web application built with
 | Backend    | Node.js + Express       |
 | Language   | TypeScript              |
 | Styling    | Tailwind CSS v4         |
+| Database   | Supabase PostgreSQL     |
+| Realtime   | Supabase Realtime       |
 | Frontend Hosting | Vercel              |
 | Backend Hosting  | Render              |
 
-## Quick Start — Deploy to Production
+## Quick Start
 
-This project is ready to deploy. Follow the guides below to host the frontend on **Vercel** and backend on **Render**.
+### 1. Clone and install
 
-### Prerequisites
+```bash
+# Install frontend dependencies
+npm install
 
-- GitHub account
-- Vercel account (free at [vercel.com](https://vercel.com))
-- Render account (free at [render.com](https://render.com))
-- Your code pushed to GitHub
+# Install backend dependencies
+cd server && npm install && cd ..
+```
+
+### 2. Set up Supabase
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Open **SQL Editor** and run the migration in:
+
+   `supabase/migrations/001_initial_schema.sql`
+
+3. Enable **Realtime** for `rooms` and `players` (the migration adds them to `supabase_realtime`).
+4. Copy your project URL and anon key from **Settings → API**.
+
+### 3. Configure environment
+
+**Frontend** — Create `.env.local` in the root:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+**Backend** — Create `server/.env`:
+
+```env
+PORT=3001
+NODE_ENV=development
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+FRONTEND_URL=http://localhost:3000
+```
+
+### 4. Run locally
+
+**Terminal 1 — Frontend:**
+```bash
+npm run dev
+```
+
+**Terminal 2 — Backend:**
+```bash
+cd server && npm run dev
+```
+
+Frontend opens at [http://localhost:3000](http://localhost:3000)
+Backend API at [http://localhost:3001](http://localhost:3001)
 
 ## Deploy to Vercel (Frontend)
 
-### Step-by-Step Guide
-
-1. **Push code to GitHub**
-   ```bash
-   git add .
-   git commit -m "Ready for deployment"
-   git push origin main
-   ```
-
-2. **Create Vercel Project**
-   - Go to [vercel.com](https://vercel.com)
-   - Click **Add New** → **Project**
-   - Import your GitHub repository
-   - Select the **Tic Tac Toe** repository
-
-3. **Configure Project Settings**
-   - **Framework Preset**: Next.js
-   - **Root Directory**: `.` (leave as default)
-   - **Build Command**: `npm run build` (default)
-   - **Output Directory**: `.next` (default)
-
-4. **Set Environment Variables**
-   Click **Environment Variables** and add:
-   - `NEXT_PUBLIC_API_URL` = `https://your-backend.onrender.com` (add after backend is deployed)
-
-5. **Deploy**
-   - Click **Deploy**
-   - Wait for build to complete
-   - Your frontend will be live at `https://your-project.vercel.app`
-
-6. **Update Backend URL (After Render Deployment)**
-   - Go back to Vercel project
-   - Update `NEXT_PUBLIC_API_URL` environment variable with your Render URL
-   - Trigger a redeployment
-
----
+1. Push the repo to GitHub.
+2. Import the project in [Vercel](https://vercel.com).
+3. Set **Root Directory** to `.` (default)
+4. Add environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_API_URL=https://your-render-backend.onrender.com`
+5. Deploy.
 
 ## Deploy to Render (Backend)
 
-### Step-by-Step Guide
-
-1. **Push code to GitHub**
-   ```bash
-   git add .
-   git commit -m "Ready for backend deployment"
-   git push origin main
-   ```
-
-2. **Create Render Service**
-   - Go to [render.com](https://render.com)
-   - Click **New +** → **Web Service**
-   - Select **GitHub** and authorize
-   - Search for and select your repository
-
-3. **Configure Service**
-   - **Name**: `tic-tac-toe-server` (or your preference)
-   - **Environment**: `Node`
-   - **Region**: Choose closest to your users
-   - **Branch**: `main`
+1. Push the repo to GitHub.
+2. Create a new **Web Service** in [Render](https://render.com).
+3. Connect your GitHub repository.
+4. Configure:
    - **Build Command**: `cd server && npm install && npm run build`
-   - **Start Command**: `npm start` (with render.yaml) or `node server/dist/index.js`
-   - **Plan**: Free (or paid for production)
+   - **Start Command**: `cd server && npm start`
+   - **Root Directory**: `.` (leave empty or default)
+5. Add environment variables:
+   - `NODE_ENV=production`
+   - `PORT=3001`
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `FRONTEND_URL=https://your-vercel-domain.vercel.app`
+6. Deploy.
 
-4. **Set Environment Variables**
-   Click **Environment** and add:
-   - `NODE_ENV` = `production`
-   - `PORT` = `3001`
-   - `FRONTEND_URL` = `https://your-project.vercel.app` (add after frontend is deployed)
-
-5. **Deploy**
-   - Click **Create Web Service**
-   - Wait for build and deployment to complete
-   - Your backend will be live at `https://your-backend.onrender.com`
-   - Copy this URL
-
-6. **Update Frontend URL (After Vercel Deployment)**
-   - Go back to Render dashboard
-   - Update `FRONTEND_URL` environment variable with your Vercel URL
-   - Click **Manual Deploy** → **Deploy Latest Commit**
-
----
-
-## Deployment Checklist
-
-- [ ] GitHub repository with both frontend and backend code
-- [ ] Vercel account created
-- [ ] Render account created
-- [ ] Backend deployed to Render (get the URL)
-- [ ] Frontend environment variables set with backend URL
-- [ ] Frontend deployed to Vercel (get the URL)
-- [ ] Backend environment variables updated with frontend URL
-- [ ] Backend redeployed
-- [ ] Test the app at Vercel URL
-
----
+## Project Structure
 
 ```
 .
@@ -159,9 +139,10 @@ This project is ready to deploy. Follow the guides below to host the frontend on
 
 ## Security Notes
 
-- API requests are authenticated and validated on the backend.
-- Server-side validation prevents unauthorized game moves.
-- CORS is configured to allow only requests from your Vercel frontend.
+- Moves are validated server-side via the `make_move` PostgreSQL function.
+- Optimistic locking (`version` column) prevents stale concurrent updates.
+- Row Level Security is enabled with permissive policies suitable for room-code access.
+- For stricter production use, consider Supabase Auth or signed room tokens.
 
 ## License
 
