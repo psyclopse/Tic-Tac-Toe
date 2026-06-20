@@ -2,17 +2,31 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
-import crypto from "crypto";
 
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 3001;
+const port = Number(process.env.PORT || 3001);
+
+function getAllowedOrigins(): string[] {
+  const raw = process.env.FRONTEND_URL || "http://localhost:3000";
+  return raw
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
 
 // Middleware
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin(origin, callback) {
+      const allowed = getAllowedOrigins();
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
     credentials: true,
   })
 );
@@ -364,6 +378,7 @@ app.post("/api/rooms/:roomId/moves", (req: Request, res: Response) => {
 
     if (gameResult) {
       updatedRoom.status = "game_over";
+      updatedRoom.current_turn = currentPlayer.symbol;
       if (gameResult === "X") updatedRoom.score_x++;
       else if (gameResult === "O") updatedRoom.score_o++;
       else updatedRoom.score_draw++;
@@ -400,6 +415,10 @@ app.post("/api/rooms/:roomId/rematch", (req: Request, res: Response) => {
       return res.json({ success: false, error: "Player not found" });
     }
 
+    if (room.status !== "game_over") {
+      return res.json({ success: false, error: "Game is not over yet." });
+    }
+
     if (player.symbol === "X") {
       room.rematch_x_accepted = true;
     } else {
@@ -434,12 +453,13 @@ app.post("/api/rooms/:roomId/reset-scores", (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: "Room not found" });
     }
 
-    const newRoom = createNewGame(room);
-    newRoom.score_x = 0;
-    newRoom.score_o = 0;
-    newRoom.score_draw = 0;
+    room.score_x = 0;
+    room.score_o = 0;
+    room.score_draw = 0;
+    room.version += 1;
+    room.updated_at = new Date().toISOString();
 
-    rooms.set(roomId, newRoom);
+    rooms.set(roomId, room);
 
     res.json({ success: true });
   } catch (error) {
@@ -449,6 +469,6 @@ app.post("/api/rooms/:roomId/reset-scores", (req: Request, res: Response) => {
 });
 
 // ============== Start Server ==============
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port ${port}`);
 });

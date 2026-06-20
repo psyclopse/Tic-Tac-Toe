@@ -79,7 +79,7 @@ export default function HomePage() {
 
       router.push(`/room/${room.code}`);
     } catch {
-      setGeneralError("Something went wrong. Check your Supabase configuration.");
+      setGeneralError("Something went wrong. Check that the API server is running.");
     } finally {
       setLoading(null);
     }
@@ -133,7 +133,7 @@ export default function HomePage() {
 
       router.push(`/room/${room.code}`);
     } catch {
-      setGeneralError("Something went wrong. Check your Supabase configuration.");
+      setGeneralError("Something went wrong. Check that the API server is running.");
     } finally {
       setLoading(null);
     }
@@ -289,7 +289,7 @@ export default function HomePage() {
         </div>
 
         <footer className="mt-12 text-center text-xs text-slate-600">
-          Built with Next.js & Supabase Realtime · Deploy on Vercel
+          Built with Next.js & Express · Frontend on Vercel · Backend on Render
         </footer>
       </div>
     </main>

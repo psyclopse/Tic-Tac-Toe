@@ -1,7 +1,5 @@
 import type { MoveResult, Player, RematchResult, Room } from "./types";
-import { parseBoard } from "./utils";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+import { getApiBaseUrl, parseBoard } from "./utils";
 
 interface ApiRoom {
   id: string;
@@ -30,6 +28,11 @@ interface ApiPlayer {
   is_connected: boolean;
   joined_at: string;
   last_seen: string;
+}
+
+interface ApiErrorBody {
+  message?: string;
+  error?: string;
 }
 
 function mapRoom(data: ApiRoom): Room {
@@ -65,38 +68,52 @@ function mapPlayer(data: ApiPlayer): Player {
   };
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Unknown error" }));
-    throw new Error(error.message || `API error: ${response.status}`);
+async function parseJson<T>(response: Response): Promise<T | null> {
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return null;
   }
-  return response.json();
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (response.ok) {
+    return (await response.json()) as T;
+  }
+
+  const error = await parseJson<ApiErrorBody>(response);
+  throw new Error(error?.message || error?.error || `API error: ${response.status}`);
 }
 
 export async function createRoom(code: string): Promise<{ room: Room | null; error: string | null }> {
   try {
-    const data = await handleResponse<ApiRoom>(
-      await fetch(`${API_URL}/api/rooms`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      })
-    );
+    const response = await fetch(`${getApiBaseUrl()}/api/rooms`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+
+    if (response.status === 409) {
+      return { room: null, error: "Room code collision. Please try again." };
+    }
+
+    const data = await handleResponse<ApiRoom>(response);
     return { room: mapRoom(data), error: null };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to create room";
-    if (message.includes("collision")) {
-      return { room: null, error: "Room code collision. Please try again." };
-    }
     return { room: null, error: message };
   }
 }
 
 export async function getRoomByCode(code: string): Promise<{ room: Room | null; error: string | null }> {
   try {
-    const data = await handleResponse<ApiRoom | null>(
-      await fetch(`${API_URL}/api/rooms/code/${code}`)
-    );
+    const response = await fetch(`${getApiBaseUrl()}/api/rooms/code/${encodeURIComponent(code)}`);
+
+    if (response.status === 404) {
+      return { room: null, error: null };
+    }
+
+    const data = await handleResponse<ApiRoom | null>(response);
     return { room: data ? mapRoom(data) : null, error: null };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to fetch room";
@@ -106,9 +123,13 @@ export async function getRoomByCode(code: string): Promise<{ room: Room | null; 
 
 export async function getRoomById(id: string): Promise<{ room: Room | null; error: string | null }> {
   try {
-    const data = await handleResponse<ApiRoom | null>(
-      await fetch(`${API_URL}/api/rooms/${id}`)
-    );
+    const response = await fetch(`${getApiBaseUrl()}/api/rooms/${encodeURIComponent(id)}`);
+
+    if (response.status === 404) {
+      return { room: null, error: null };
+    }
+
+    const data = await handleResponse<ApiRoom | null>(response);
     return { room: data ? mapRoom(data) : null, error: null };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to fetch room";
@@ -119,7 +140,7 @@ export async function getRoomById(id: string): Promise<{ room: Room | null; erro
 export async function getPlayersInRoom(roomId: string): Promise<{ players: Player[]; error: string | null }> {
   try {
     const data = await handleResponse<ApiPlayer[]>(
-      await fetch(`${API_URL}/api/rooms/${roomId}/players`)
+      await fetch(`${getApiBaseUrl()}/api/rooms/${encodeURIComponent(roomId)}/players`)
     );
     return { players: data.map(mapPlayer), error: null };
   } catch (error) {
@@ -134,30 +155,36 @@ export async function joinRoom(
   sessionId: string
 ): Promise<{ player: Player | null; error: string | null; errorCode?: string }> {
   try {
-    const data = await handleResponse<ApiPlayer>(
-      await fetch(`${API_URL}/api/rooms/${roomId}/players`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, session_id: sessionId }),
-      })
-    );
+    const response = await fetch(`${getApiBaseUrl()}/api/rooms/${encodeURIComponent(roomId)}/players`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, session_id: sessionId }),
+    });
+
+    if (response.status === 400) {
+      const body = await parseJson<ApiErrorBody>(response);
+      const message = body?.message || "Failed to join room";
+      if (message.toLowerCase().includes("full")) {
+        return { player: null, error: "Room is full. Maximum 2 players allowed.", errorCode: "ROOM_FULL" };
+      }
+      if (message.toLowerCase().includes("already")) {
+        return { player: null, error: message, errorCode: "DUPLICATE" };
+      }
+      return { player: null, error: message };
+    }
+
+    const data = await handleResponse<ApiPlayer>(response);
     return { player: mapPlayer(data), error: null };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to join room";
-    if (message.includes("full")) {
-      return { player: null, error: "Room is full. Maximum 2 players allowed.", errorCode: "ROOM_FULL" };
-    }
-    if (message.includes("already")) {
-      return { player: null, error: message, errorCode: "DUPLICATE" };
-    }
     return { player: null, error: message };
   }
 }
 
 export async function updatePlayerPresence(playerId: string, connected: boolean): Promise<void> {
   try {
-    await handleResponse<void>(
-      await fetch(`${API_URL}/api/players/${playerId}/presence`, {
+    await handleResponse<ApiPlayer>(
+      await fetch(`${getApiBaseUrl()}/api/players/${encodeURIComponent(playerId)}/presence`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_connected: connected }),
@@ -175,18 +202,20 @@ export async function makeMove(
   expectedVersion: number
 ): Promise<MoveResult> {
   try {
-    const data = await handleResponse<MoveResult>(
-      await fetch(`${API_URL}/api/rooms/${roomId}/moves`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: sessionId,
-          cell_index: cellIndex,
-          expected_version: expectedVersion,
-        }),
-      })
-    );
-    return data;
+    const response = await fetch(`${getApiBaseUrl()}/api/rooms/${encodeURIComponent(roomId)}/moves`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        session_id: sessionId,
+        cell_index: cellIndex,
+        expected_version: expectedVersion,
+      }),
+    });
+
+    const data = await parseJson<MoveResult>(response);
+    if (data) return data;
+
+    return { success: false, error: "Move failed" };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Move failed";
     return { success: false, error: message };
@@ -196,7 +225,7 @@ export async function makeMove(
 export async function requestRematch(roomId: string, sessionId: string): Promise<RematchResult> {
   try {
     const data = await handleResponse<RematchResult>(
-      await fetch(`${API_URL}/api/rooms/${roomId}/rematch`, {
+      await fetch(`${getApiBaseUrl()}/api/rooms/${encodeURIComponent(roomId)}/rematch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: sessionId }),
@@ -212,7 +241,7 @@ export async function requestRematch(roomId: string, sessionId: string): Promise
 export async function resetScores(roomId: string): Promise<{ success: boolean; error?: string }> {
   try {
     const data = await handleResponse<{ success: boolean; error?: string }>(
-      await fetch(`${API_URL}/api/rooms/${roomId}/reset-scores`, {
+      await fetch(`${getApiBaseUrl()}/api/rooms/${encodeURIComponent(roomId)}/reset-scores`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -225,32 +254,45 @@ export async function resetScores(roomId: string): Promise<{ success: boolean; e
   }
 }
 
-// Polling-based subscription for development. In production, consider WebSockets.
+function playersFingerprint(players: Player[]): string {
+  return players
+    .map((p) => `${p.id}:${p.is_connected}:${p.last_seen}`)
+    .sort()
+    .join("|");
+}
+
 export function subscribeToRoom(
   roomId: string,
   onRoomChange: (room: Room) => void,
   onPlayersChange: (players: Player[]) => void
 ): () => void {
   let lastRoomVersion = -1;
-  let lastPlayersVersion = -1;
+  let lastPlayersFingerprint = "";
 
-  const interval = setInterval(async () => {
+  const poll = async () => {
     try {
-      const { room } = await getRoomById(roomId);
-      if (room && room.version > lastRoomVersion) {
+      const [{ room }, { players }] = await Promise.all([
+        getRoomById(roomId),
+        getPlayersInRoom(roomId),
+      ]);
+
+      if (room && room.version !== lastRoomVersion) {
         lastRoomVersion = room.version;
         onRoomChange(room);
       }
 
-      const { players } = await getPlayersInRoom(roomId);
-      if (players.length > 0 && players.length !== lastPlayersVersion) {
-        lastPlayersVersion = players.length;
+      const fingerprint = playersFingerprint(players);
+      if (fingerprint !== lastPlayersFingerprint) {
+        lastPlayersFingerprint = fingerprint;
         onPlayersChange(players);
       }
     } catch (error) {
       console.error("Subscription error:", error);
     }
-  }, 1000); // Poll every second
+  };
+
+  void poll();
+  const interval = setInterval(poll, 1000);
 
   return () => clearInterval(interval);
 }
