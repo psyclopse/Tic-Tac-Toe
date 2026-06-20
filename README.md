@@ -85,33 +85,106 @@ Backend API at [http://localhost:3001](http://localhost:3001)
 
 ## Deploy to Vercel (Frontend)
 
-1. Push the repo to GitHub.
-2. Import the project in [Vercel](https://vercel.com).
-3. Set **Root Directory** to `.` (default)
-4. Add environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `NEXT_PUBLIC_API_URL=https://your-render-backend.onrender.com`
-5. Deploy.
+### Step-by-Step Guide
+
+1. **Push code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Ready for deployment"
+   git push origin main
+   ```
+
+2. **Create Vercel Project**
+   - Go to [vercel.com](https://vercel.com)
+   - Click **Add New** → **Project**
+   - Import your GitHub repository
+   - Select the **Tic Tac Toe** repository
+
+3. **Configure Project Settings**
+   - **Framework Preset**: Next.js
+   - **Root Directory**: `.` (leave as default)
+   - **Build Command**: `npm run build` (default)
+   - **Output Directory**: `.next` (default)
+
+4. **Set Environment Variables**
+   Click **Environment Variables** and add:
+   - `NEXT_PUBLIC_SUPABASE_URL` = `https://your-project.supabase.co`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `your-anon-key`
+   - `NEXT_PUBLIC_API_URL` = `https://your-backend.onrender.com` (add after backend is deployed)
+
+5. **Deploy**
+   - Click **Deploy**
+   - Wait for build to complete
+   - Your frontend will be live at `https://your-project.vercel.app`
+
+6. **Update Backend URL (After Render Deployment)**
+   - Go back to Vercel project
+   - Update `NEXT_PUBLIC_API_URL` environment variable with your Render URL
+   - Trigger a redeployment
+
+---
 
 ## Deploy to Render (Backend)
 
-1. Push the repo to GitHub.
-2. Create a new **Web Service** in [Render](https://render.com).
-3. Connect your GitHub repository.
-4. Configure:
-   - **Build Command**: `cd server && npm install && npm run build`
-   - **Start Command**: `cd server && npm start`
-   - **Root Directory**: `.` (leave empty or default)
-5. Add environment variables:
-   - `NODE_ENV=production`
-   - `PORT=3001`
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-   - `FRONTEND_URL=https://your-vercel-domain.vercel.app`
-6. Deploy.
+### Step-by-Step Guide
 
-## Project Structure
+1. **Push code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Ready for backend deployment"
+   git push origin main
+   ```
+
+2. **Create Render Service**
+   - Go to [render.com](https://render.com)
+   - Click **New +** → **Web Service**
+   - Select **GitHub** and authorize
+   - Search for and select your repository
+
+3. **Configure Service**
+   - **Name**: `tic-tac-toe-server` (or your preference)
+   - **Environment**: `Node`
+   - **Region**: Choose closest to your users
+   - **Branch**: `main`
+   - **Build Command**: `cd server && npm install && npm run build`
+   - **Start Command**: `npm start` (with render.yaml) or `node server/dist/index.js`
+   - **Plan**: Free (or paid for production)
+
+4. **Set Environment Variables**
+   Click **Environment** and add:
+   - `NODE_ENV` = `production`
+   - `PORT` = `3001`
+   - `VITE_SUPABASE_URL` = `https://your-project.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY` = `your-anon-key`
+   - `FRONTEND_URL` = `https://your-project.vercel.app` (add after frontend is deployed)
+
+5. **Deploy**
+   - Click **Create Web Service**
+   - Wait for build and deployment to complete
+   - Your backend will be live at `https://your-backend.onrender.com`
+   - Copy this URL
+
+6. **Update Frontend URL (After Vercel Deployment)**
+   - Go back to Render dashboard
+   - Update `FRONTEND_URL` environment variable with your Vercel URL
+   - Click **Manual Deploy** → **Deploy Latest Commit**
+
+---
+
+## Deployment Checklist
+
+- [ ] Supabase project created and migrations applied
+- [ ] GitHub repository with both frontend and backend code
+- [ ] Vercel account created
+- [ ] Render account created
+- [ ] Backend deployed to Render (get the URL)
+- [ ] Frontend environment variables set with backend URL
+- [ ] Frontend deployed to Vercel (get the URL)
+- [ ] Backend environment variables updated with frontend URL
+- [ ] Backend redeployed
+- [ ] Test the app at Vercel URL
+
+---
 
 ```
 .
