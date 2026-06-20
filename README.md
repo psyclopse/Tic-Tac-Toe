@@ -1,6 +1,6 @@
 # Tic Tac Toe — Online Multiplayer
 
-A production-ready, real-time multiplayer Tic-Tac-Toe web application built with **Next.js 15**, **TypeScript**, **Tailwind CSS**, and **Supabase** (PostgreSQL + Realtime). Deploy directly to **Vercel**.
+A production-ready, real-time multiplayer Tic-Tac-Toe web application built with **Next.js 15**, **TypeScript**, **Tailwind CSS**, and **Supabase** (PostgreSQL + Realtime). Separate frontend and backend for deployment on **Vercel** and **Render**.
 
 ## Features
 
@@ -17,19 +17,25 @@ A production-ready, real-time multiplayer Tic-Tac-Toe web application built with
 
 | Layer      | Technology              |
 |-----------|-------------------------|
-| Framework | Next.js 15 (App Router) |
-| Language  | TypeScript              |
-| Styling   | Tailwind CSS v4         |
-| Database  | Supabase PostgreSQL     |
-| Realtime  | Supabase Realtime       |
-| Hosting   | Vercel                  |
+| Frontend   | Next.js 15 (App Router) |
+| Backend    | Node.js + Express       |
+| Language   | TypeScript              |
+| Styling    | Tailwind CSS v4         |
+| Database   | Supabase PostgreSQL     |
+| Realtime   | Supabase Realtime       |
+| Frontend Hosting | Vercel              |
+| Backend Hosting  | Render              |
 
 ## Quick Start
 
 ### 1. Clone and install
 
 ```bash
+# Install frontend dependencies
 npm install
+
+# Install backend dependencies
+cd server && npm install && cd ..
 ```
 
 ### 2. Set up Supabase
@@ -44,52 +50,91 @@ npm install
 
 ### 3. Configure environment
 
-```bash
-cp .env.example .env.local
-```
-
-Edit `.env.local`:
+**Frontend** — Create `.env.local` in the root:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+**Backend** — Create `server/.env`:
+
+```env
+PORT=3001
+NODE_ENV=development
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+FRONTEND_URL=http://localhost:3000
 ```
 
 ### 4. Run locally
 
+**Terminal 1 — Frontend:**
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+**Terminal 2 — Backend:**
+```bash
+cd server && npm run dev
+```
 
-## Deploy to Vercel
+Frontend opens at [http://localhost:3000](http://localhost:3000)
+Backend API at [http://localhost:3001](http://localhost:3001)
+
+## Deploy to Vercel (Frontend)
 
 1. Push the repo to GitHub.
 2. Import the project in [Vercel](https://vercel.com).
-3. Add environment variables:
+3. Set **Root Directory** to `.` (default)
+4. Add environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. Deploy.
+   - `NEXT_PUBLIC_API_URL=https://your-render-backend.onrender.com`
+5. Deploy.
 
-No extra server configuration is required — the app is fully static + client-side with Supabase as the backend.
+## Deploy to Render (Backend)
+
+1. Push the repo to GitHub.
+2. Create a new **Web Service** in [Render](https://render.com).
+3. Connect your GitHub repository.
+4. Configure:
+   - **Build Command**: `cd server && npm install && npm run build`
+   - **Start Command**: `cd server && npm start`
+   - **Root Directory**: `.` (leave empty or default)
+5. Add environment variables:
+   - `NODE_ENV=production`
+   - `PORT=3001`
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `FRONTEND_URL=https://your-vercel-domain.vercel.app`
+6. Deploy.
 
 ## Project Structure
 
 ```
-src/
-├── app/
-│   ├── page.tsx              # Landing page
-│   ├── room/[code]/page.tsx  # Waiting room + game
-│   ├── layout.tsx
-│   └── globals.css
-├── components/               # UI components
-├── hooks/useRoom.ts          # Realtime subscription + presence
-└── lib/
-    ├── supabase.ts           # Supabase client & API helpers
-    ├── types.ts
-    └── utils.ts              # Validation & game helpers
-supabase/migrations/          # Database schema & RPC functions
+.
+├── src/                          # Frontend (Next.js)
+│   ├── app/
+│   │   ├── page.tsx              # Landing page
+│   │   ├── room/[code]/page.tsx  # Waiting room + game
+│   │   ├── layout.tsx
+│   │   └── globals.css
+│   ├── components/               # UI components
+│   ├── hooks/useRoom.ts          # Realtime subscription + presence
+│   └── lib/
+│       ├── supabase.ts           # Supabase client & API helpers
+│       ├── types.ts
+│       └── utils.ts              # Validation & game helpers
+├── server/                       # Backend (Express)
+│   ├── src/
+│   │   └── index.ts              # API server
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── .env.example
+│   └── render.yaml
+└── supabase/migrations/          # Database schema & RPC functions
 ```
 
 ## Security Notes
