@@ -1,6 +1,6 @@
 # Tic Tac Toe — Online Multiplayer
 
-A production-ready, real-time multiplayer Tic-Tac-Toe web application built with **Next.js 15**, **TypeScript**, **Tailwind CSS**, and **Supabase** (PostgreSQL + Realtime). Separate frontend and backend for deployment on **Vercel** and **Render**.
+A production-ready, real-time multiplayer Tic-Tac-Toe web application built with **Next.js 15**, **TypeScript**, **Tailwind CSS**, and **Express.js**. Separate frontend and backend for deployment on **Vercel** and **Render**.
 
 ## Features
 
@@ -11,7 +11,7 @@ A production-ready, real-time multiplayer Tic-Tac-Toe web application built with
 - **Game logic** — turn-based play, win/draw detection, winning line highlight
 - **Score tracking** — persistent session scores with reset
 - **Rematch** — both players must accept before a new round starts
-- **Race-condition safe** — atomic moves via PostgreSQL functions + optimistic locking
+- **Server-validated moves** — prevent cheating with backend validation
 
 ## Tech Stack
 
@@ -21,67 +21,19 @@ A production-ready, real-time multiplayer Tic-Tac-Toe web application built with
 | Backend    | Node.js + Express       |
 | Language   | TypeScript              |
 | Styling    | Tailwind CSS v4         |
-| Database   | Supabase PostgreSQL     |
-| Realtime   | Supabase Realtime       |
 | Frontend Hosting | Vercel              |
 | Backend Hosting  | Render              |
 
-## Quick Start
+## Quick Start — Deploy to Production
 
-### 1. Clone and install
+This project is ready to deploy. Follow the guides below to host the frontend on **Vercel** and backend on **Render**.
 
-```bash
-# Install frontend dependencies
-npm install
+### Prerequisites
 
-# Install backend dependencies
-cd server && npm install && cd ..
-```
-
-### 2. Set up Supabase
-
-1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** and run the migration in:
-
-   `supabase/migrations/001_initial_schema.sql`
-
-3. Enable **Realtime** for `rooms` and `players` (the migration adds them to `supabase_realtime`).
-4. Copy your project URL and anon key from **Settings → API**.
-
-### 3. Configure environment
-
-**Frontend** — Create `.env.local` in the root:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-NEXT_PUBLIC_API_URL=http://localhost:3001
-```
-
-**Backend** — Create `server/.env`:
-
-```env
-PORT=3001
-NODE_ENV=development
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-FRONTEND_URL=http://localhost:3000
-```
-
-### 4. Run locally
-
-**Terminal 1 — Frontend:**
-```bash
-npm run dev
-```
-
-**Terminal 2 — Backend:**
-```bash
-cd server && npm run dev
-```
-
-Frontend opens at [http://localhost:3000](http://localhost:3000)
-Backend API at [http://localhost:3001](http://localhost:3001)
+- GitHub account
+- Vercel account (free at [vercel.com](https://vercel.com))
+- Render account (free at [render.com](https://render.com))
+- Your code pushed to GitHub
 
 ## Deploy to Vercel (Frontend)
 
@@ -108,8 +60,6 @@ Backend API at [http://localhost:3001](http://localhost:3001)
 
 4. **Set Environment Variables**
    Click **Environment Variables** and add:
-   - `NEXT_PUBLIC_SUPABASE_URL` = `https://your-project.supabase.co`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `your-anon-key`
    - `NEXT_PUBLIC_API_URL` = `https://your-backend.onrender.com` (add after backend is deployed)
 
 5. **Deploy**
@@ -154,8 +104,6 @@ Backend API at [http://localhost:3001](http://localhost:3001)
    Click **Environment** and add:
    - `NODE_ENV` = `production`
    - `PORT` = `3001`
-   - `VITE_SUPABASE_URL` = `https://your-project.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY` = `your-anon-key`
    - `FRONTEND_URL` = `https://your-project.vercel.app` (add after frontend is deployed)
 
 5. **Deploy**
@@ -173,7 +121,6 @@ Backend API at [http://localhost:3001](http://localhost:3001)
 
 ## Deployment Checklist
 
-- [ ] Supabase project created and migrations applied
 - [ ] GitHub repository with both frontend and backend code
 - [ ] Vercel account created
 - [ ] Render account created
@@ -212,10 +159,9 @@ Backend API at [http://localhost:3001](http://localhost:3001)
 
 ## Security Notes
 
-- Moves are validated server-side via the `make_move` PostgreSQL function.
-- Optimistic locking (`version` column) prevents stale concurrent updates.
-- Row Level Security is enabled with permissive policies suitable for room-code access.
-- For stricter production use, consider Supabase Auth or signed room tokens.
+- API requests are authenticated and validated on the backend.
+- Server-side validation prevents unauthorized game moves.
+- CORS is configured to allow only requests from your Vercel frontend.
 
 ## License
 
