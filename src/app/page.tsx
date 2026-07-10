@@ -143,15 +143,11 @@ export default function HomePage() {
     <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl animate-fade-in">
         <header className="text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-medium text-indigo-300">
-            Real-time multiplayer
-          </div>
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-black sm:text-5xl">
             Tic Tac Toe
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-slate-400">
-            Challenge a friend online. Create a room, share your code, and play instantly —
-            synchronized in real time.
+            You know how it works dont stress me please
           </p>
         </header>
 
