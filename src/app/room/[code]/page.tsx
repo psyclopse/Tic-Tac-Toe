@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CopyButton } from "@/components/CopyButton";
@@ -11,6 +11,7 @@ import { ScoreBoard } from "@/components/ScoreBoard";
 import { Button } from "@/components/ui/Button";
 import { useRoom } from "@/hooks/useRoom";
 import { getRoomByCode, getPlayersInRoom, joinRoom, makeMove, requestRematch, resetScores } from "@/lib/api";
+import type { Player } from "@/lib/types";
 import { getOrCreateSessionId, loadSession, saveSession } from "@/lib/utils";
 
 export default function RoomPage() {
@@ -23,6 +24,8 @@ export default function RoomPage() {
   const [moveLoading, setMoveLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [moveError, setMoveError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const previousPlayersRef = useRef<Player[]>([]);
 
   useEffect(() => {
     setSessionId(getOrCreateSessionId());
@@ -99,6 +102,31 @@ export default function RoomPage() {
     roomId: roomId ?? "",
     sessionId,
   });
+
+  useEffect(() => {
+    if (previousPlayersRef.current.length === 0) {
+      previousPlayersRef.current = players;
+      return;
+    }
+
+    const previousPlayers = previousPlayersRef.current;
+    const disconnectedPlayers = players.filter((player) => {
+      const previousPlayer = previousPlayers.find((item) => item.id === player.id);
+      return previousPlayer?.is_connected && !player.is_connected && player.session_id !== sessionId;
+    });
+
+    previousPlayersRef.current = players;
+
+    if (disconnectedPlayers.length === 0) {
+      return;
+    }
+
+    const disconnectedPlayer = disconnectedPlayers[0];
+    setToastMessage(`${disconnectedPlayer.name} left the room.`);
+
+    const timer = window.setTimeout(() => setToastMessage(null), 3200);
+    return () => window.clearTimeout(timer);
+  }, [players, sessionId]);
 
   const handleCellClick = useCallback(
     async (index: number) => {
@@ -196,7 +224,17 @@ export default function RoomPage() {
     : null;
 
   return (
-    <main className="min-h-screen px-4 py-8 sm:px-6">
+    <>
+      {toastMessage && (
+        <div
+          className="fixed right-4 top-4 z-50 max-w-sm rounded-2xl border border-amber-500/30 bg-slate-900/95 px-4 py-3 text-sm text-amber-200 shadow-lg backdrop-blur"
+          role="status"
+        >
+          <p className="font-medium">{toastMessage}</p>
+        </div>
+      )}
+
+      <main className="min-h-screen px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-2xl animate-fade-in">
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -276,6 +314,7 @@ export default function RoomPage() {
         )}
       </div>
     </main>
+    </>
   );
 }
 
