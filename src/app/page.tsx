@@ -156,7 +156,7 @@ export default function HomePage() {
         </header>
 
         <div className="mt-12 grid gap-8 lg:grid-cols-5">
-          <section className="lg:col-span-3">
+          <section className="lg:col-start-2 lg:col-span-3">
             <div className="rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-2xl shadow-black/20 backdrop-blur sm:p-8">
               <Input
                 label="Your name"
