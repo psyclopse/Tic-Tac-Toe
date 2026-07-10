@@ -151,10 +151,10 @@ Deploy the **backend first** so you have the API URL for Vercel.
 | Setting | Value |
 |---------|-------|
 | **Name** | `tic-tac-toe-api` |
-| **Root Directory** | `server` |
+| **Root Directory** | `.` (repo root) |
 | **Runtime** | Node |
-| **Build Command** | `npm install && npm run build` |
-| **Start Command** | `npm start` |
+| **Build Command** | `npm install && npm run build:server` |
+| **Start Command** | `npm run start:server` |
 | **Health Check Path** | `/health` |
 | **Plan** | Free |
 

@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run build --prefix server && next build",
+    "build": "npm run build:server && next build",
+    "build:server": "npm install --prefix server --include=dev && npm run build --prefix server",
     "start": "next start",
+    "start:server": "node server.js",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
