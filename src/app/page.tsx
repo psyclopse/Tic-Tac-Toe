@@ -232,60 +232,6 @@ export default function HomePage() {
               )}
             </div>
           </section>
-
-          <aside className="lg:col-span-2">
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 sm:p-8">
-              <h2 className="text-lg font-semibold text-slate-100">How to play</h2>
-              <ol className="mt-4 space-y-4 text-sm text-slate-400">
-                <li className="flex gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-xs font-bold text-indigo-400">
-                    1
-                  </span>
-                  <span>Enter your name — it&apos;s required to create or join a room.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-xs font-bold text-indigo-400">
-                    2
-                  </span>
-                  <span>Create a room and share the code, or join with a friend&apos;s code.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-xs font-bold text-indigo-400">
-                    3
-                  </span>
-                  <span>First player is <strong className="text-sky-400">X</strong>, second is <strong className="text-amber-400">O</strong>.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-xs font-bold text-indigo-400">
-                    4
-                  </span>
-                  <span>Take turns placing your mark. Get three in a row to win!</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-xs font-bold text-indigo-400">
-                    5
-                  </span>
-                  <span>After each game, both players can accept a rematch. Scores sync automatically.</span>
-                </li>
-              </ol>
-
-              <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Preview</p>
-                <div className="mt-3 grid grid-cols-3 gap-1.5">
-                  {["X", "", "O", "", "X", "", "O", "", ""].map((cell, i) => (
-                    <div
-                      key={i}
-                      className={`flex aspect-square items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-lg font-bold ${
-                        cell === "X" ? "text-sky-400" : cell === "O" ? "text-amber-400" : "text-slate-700"
-                      }`}
-                    >
-                      {cell || "·"}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
         </div>
 
         <footer className="mt-12 text-center text-xs text-slate-600">
