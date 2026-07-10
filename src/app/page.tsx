@@ -157,8 +157,9 @@ export default function HomePage() {
 
         <div className="mt-12 grid gap-8 lg:grid-cols-5">
           <section className="lg:col-start-2 lg:col-span-3">
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-2xl shadow-black/20 backdrop-blur sm:p-8">
-              <Input
+            <div className="relative overflow-hidden rounded-[28px] border border-amber-900/25 bg-[linear-gradient(135deg,rgba(255,251,240,0.98),rgba(242,228,196,0.98))] p-6 shadow-[0_18px_45px_rgba(82,58,24,0.25)] ring-1 ring-white/60 before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.9),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(120,89,51,0.16),transparent_42%),repeating-linear-gradient(0deg,rgba(120,89,51,0.05)_0,rgba(120,89,51,0.05)_1px,transparent_1px,transparent_4px)] before:opacity-90 before:content-[''] sm:p-8">
+              <div className="relative z-10">
+                <Input
                 label="Your name"
                 placeholder="Enter your display name"
                 value={playerName}
@@ -230,6 +231,7 @@ export default function HomePage() {
                   {generalError}
                 </p>
               )}
+              </div>
             </div>
           </section>
         </div>
